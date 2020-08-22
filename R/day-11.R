@@ -2,7 +2,7 @@ library(tidyverse)
 library(sf)
 library(units)
 
-homecity = readr::read_csv("C:/Users/princ/Documents/github/geog-176A-labs/data/uscities.csv") %>%
+homecity = readr::read_csv("../geog-176A-labs/data/uscities.csv") %>%
   st_as_sf(coords = c("lng","lat"), crs = 4326) %>%
   filter(city %in% c("Santa Barbara", "Escondido"))
 
