@@ -1,0 +1,45 @@
+---
+title: "Geography 176A"
+author: "[Leslie Alonzo](https://LeslieAlonzo98.github.io)"
+subtitle: 'Daily Exercise 13'
+output:
+  html_document:
+    theme: journal
+---
+
+```{r,  include=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(sf)
+library(stars)
+library(units)
+library(raster)
+library(mapview)
+library(leaflet)
+library(gdalUtilities)
+library(rmapshaper)
+```
+
+```{r,message=FALSE, echo=FALSE}
+conus = USAboundaries::us_states() %>%
+  filter(!state_name %in% c("Puerto Rico",
+                            "Alaska",
+                            "Hawaii")) %>%
+  st_as_sf(coords = c("lng","lat"), crs = 4326)
+  
+conus = st_transform(conus, 5070)
+
+plot(conus$geometry)
+mapview::npts(conus)
+
+simp_states = st_simplify(conus, preserveTopology = TRUE, dTolerance = 10000)
+
+plot(simp_states$geometry)
+mapview::npts(simp_states)
+
+conus5 = ms_simplify(conus, keep = .05)
+
+plot(conus5$geometry)
+mapview::npts(conus5)
+
+```
+
