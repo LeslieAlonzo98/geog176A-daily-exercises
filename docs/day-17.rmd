@@ -1,4 +1,13 @@
-```{r}
+---
+title: "Geography 176A"
+author: "[Leslie Alonzo](https://LeslieAlonzo98.github.io)"
+subtitle: 'Daily Exercise 17'
+output:
+  html_document:
+    theme: journal
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(sf)
 library(stars)
@@ -8,47 +17,32 @@ library(mapview)
 library(elevatr)
 library(rmapshaper)
 library(USAboundaries)
+library(rgdal)
 ```
 
-```{r}
-cities = read_csv("../docs/uscities.csv") %>% 
-  st_as_sf(coords = c("lng", "lat"), crs = 4326)
-
-gol = filter(cities, city == "Goleta") %>% 
-  st_transform(5070) %>% 
-  dplyr::select(city)
-
-bb = st_bbox(gol)
-
-class(bb)
-
-typeof(bb)
-
-bb = st_as_sfc(bb)
-
-class(bb)
-
-typeof(bb)
-
-plot(bb, border = rgb(0,0,1))
-plot(gol, add = TRUE, col = rgb(1,0,0, .5))
-
-```
-```{r}
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
 gol = read_csv("../docs/uscities.csv") %>% 
   st_as_sf(coords = c("lng","lat"), crs = 4326) %>% 
   filter(city == "Goleta") %>%
   dplyr::select(city) %>% 
   st_transform(5070) %>%
-  st_as_sf() %>% 
-  st_as_sfc() %>% 
-  st_bbox()
+  st_buffer(5000) %>% 
+  st_bbox() %>% 
+  st_as_sfc() %>%
+  st_as_sf()
 
-plot(gol, border = rgb(0, 0, 1))
+elev = elevatr::get_elev_raster(gol, z = 11) %>% 
+  crop(gol)
 
-elev = elevatr::get_elev_raster(gol, z = 11)
+log10(elev)
 
-writeRaster(elev, filename = "../../geog-176A-labs/data/goletaelev.tif", overwrite = TRUE)
+
+elev2 = elev
+elev2[elev2 <= 0] = NA
+
+plot(elev2)
+
+writeRaster(elev2, filename = "../../geog-176A-labs/data/goletaelev.tif", overwrite = TRUE)
 
 
 ```

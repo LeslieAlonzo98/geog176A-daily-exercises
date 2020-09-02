@@ -1,0 +1,44 @@
+---
+title: "Geography 176A"
+author: "[Leslie Alonzo](https://LeslieAlonzo98.github.io)"
+subtitle: 'Daily Exercise 16 - COVID Cases by State'
+output:
+  html_document:
+    theme: journal
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(leaflet)
+library(sf)
+library(tidyverse)
+library(USAboundaries)
+library(mapview)
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+
+covid = readr::read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv') %>%
+  filter(date == max(date)) %>% 
+  right_join(USAboundaries::us_states(), by = c("state" = "name")) %>% 
+  filter(!stusps %in% c("AK","PR", "HI")) %>% 
+  st_as_sf()
+
+covidstatemap <- leaflet() %>%
+  addProviderTiles(providers$Stamen.Watercolor) %>% 
+  addPolygons(data = covid,
+              fillColor = ~colorQuantile("YlOrRd", cases)(cases),
+              stroke = TRUE,
+              color = "gray",
+              label = ~state_name) %>% 
+  addCircles(data = st_centroid(covid), 
+             fillColor  = ~colorQuantile("blue", cases)(cases),
+             color = NA,
+             fillOpacity = .5,
+             radius = ~cases/3,
+             label = ~cases)
+
+covidstatemap
+```
+
+
+
