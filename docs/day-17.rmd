@@ -1,0 +1,55 @@
+```{r}
+library(tidyverse)
+library(sf)
+library(stars)
+library(units)
+library(raster)
+library(mapview)
+library(elevatr)
+library(rmapshaper)
+library(USAboundaries)
+```
+
+```{r}
+cities = read_csv("../docs/uscities.csv") %>% 
+  st_as_sf(coords = c("lng", "lat"), crs = 4326)
+
+gol = filter(cities, city == "Goleta") %>% 
+  st_transform(5070) %>% 
+  dplyr::select(city)
+
+bb = st_bbox(gol)
+
+class(bb)
+
+typeof(bb)
+
+bb = st_as_sfc(bb)
+
+class(bb)
+
+typeof(bb)
+
+plot(bb, border = rgb(0,0,1))
+plot(gol, add = TRUE, col = rgb(1,0,0, .5))
+
+```
+```{r}
+gol = read_csv("../docs/uscities.csv") %>% 
+  st_as_sf(coords = c("lng","lat"), crs = 4326) %>% 
+  filter(city == "Goleta") %>%
+  dplyr::select(city) %>% 
+  st_transform(5070) %>%
+  st_as_sf() %>% 
+  st_as_sfc() %>% 
+  st_bbox()
+
+plot(gol, border = rgb(0, 0, 1))
+
+elev = elevatr::get_elev_raster(gol, z = 11)
+
+writeRaster(elev, filename = "../../geog-176A-labs/data/goletaelev.tif", overwrite = TRUE)
+
+
+```
+
