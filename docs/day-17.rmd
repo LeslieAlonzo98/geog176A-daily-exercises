@@ -44,6 +44,31 @@ plot(elev2)
 
 writeRaster(elev2, filename = "../../geog-176A-labs/data/goletaelev.tif", overwrite = TRUE)
 
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+
+#CALC 
+
+FUN = function(x){ ifelse(x <= 0, NA, 1) }
+
+elev3 = calc(elev, FUN)
+
+mask = elev * elev3
+
+
+#Reclassify
+
+
+rcl = data.frame(min = seq(0, 500, 100), max = seq(100, 600, 100), lab = c(0:5))
+
+rc = reclassify(mask, rcl, lowerTRUE=TRUE)
+
+s = stack(elev, elev3, mask, rc) %>% 
+  setNames(c("elevation", "land-mask", "terrain", "topography"))
+
+plot(s, col = viridis::viridis(256))
+
 
 ```
 
