@@ -18,6 +18,8 @@ library(elevatr)
 library(rmapshaper)
 library(USAboundaries)
 library(rgdal)
+library(osmdata)
+library(leaflet)
 ```
 
 ```{r, echo = FALSE, warning=FALSE, message=FALSE}
@@ -68,6 +70,42 @@ s = stack(elev, elev3, mask, rc) %>%
   setNames(c("elevation", "land-mask", "terrain", "topography"))
 
 plot(s, col = viridis::viridis(256))
+
+
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+gol84 = gol %>% 
+  st_transform(4326)
+
+osm = osmdata::opq(gol84) %>%
+  add_osm_feature(key = 'amenity',
+                  value = "restaurant",
+                  key_exact = TRUE,
+                  value_exact = TRUE,
+                  match_case = TRUE,
+                  bbox = NULL) %>% 
+  osmdata_sf()
+
+print(osm)
+
+golres = osm$osm_points %>% 
+  filter(!name %in% (NA)) %>% 
+  dplyr::select(osm_id, name, amenity)
+
+gre = function(elev3){ ifelse(elev3 <= 0, NA, 1) }
+
+grelev = calc(elev3, gre)
+
+golreselev = elevatr::get_elev_raster(grelev, z = 11)
+
+finalelev = elev3 * golreselev
+
+golresleaf <- leaflet() %>%
+  addProviderTiles(providers$Stamen.Watercolor) %>%
+  addMarkers(data = golres, popup = ~name, label = ~name)
+  
+golresleaf
 
 
 ```
