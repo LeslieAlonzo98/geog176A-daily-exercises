@@ -1,0 +1,59 @@
+---
+title: "Geography 176A"
+author: "[Leslie Alonzo](https://LeslieAlonzo98.github.io)"
+subtitle: 'Daily Exercise 20'
+output:
+  html_document:
+    theme: journal
+---
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(climateR)
+library(tidyverse)
+library(sf)
+library(stars)
+library(stats)
+library(units)
+library(raster)
+library(mapview)
+library(elevatr)
+```
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+
+params = c("prcp", "soilm", "srad")
+
+states = USAboundaries::us_states() %>%
+  st_as_sf() %>% 
+  filter(name == "California")
+
+ca = climateR::getTerraClim(states, params, startDate = "2018-08-01") %>% 
+  stack() %>% 
+  setNames(params)
+
+plot(ca)
+
+elev = elevatr::get_elev_raster(states, z = 5) %>% 
+  crop(states)
+
+elev = projectRaster(elev, ca$prcp)
+
+values = stack(ca$prcp, elev) %>% 
+  values()
+
+idx = which(!is.na(values))
+
+v = na.omit(values)
+
+vs = scale(v)
+
+E = kmeans(vs, 5, iter.max = 100)
+
+clus_raster = elev[[1]]
+
+values(clus_raster) = NA
+
+clus_raster[idx] <- E$cluster
+
+plot(clus_raster, col = RColorBrewer::brewer.pal(5, "Spectral"))
+```
+
