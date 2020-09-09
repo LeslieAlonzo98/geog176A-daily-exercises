@@ -1,0 +1,61 @@
+---
+title: "Geography 176A"
+author: "[Leslie Alonzo](https://LeslieAlonzo98.github.io)"
+subtitle: 'Daily Exercise 21'
+output:
+  html_document:
+    theme: journal
+---
+```{r Importing Libraries, include=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(stars)
+library(sf)
+library(raster)
+library(elevatr)
+library(raster)
+library(whitebox)
+```
+
+```{r Finding AOI, include=FALSE, message=FALSE, echo=FALSE}
+msh = AOI::aoi_get("Mount Saint Helens") %>% 
+  AOI::aoi_buffer(.5)
+```
+
+```{r Whitebox, eval=FALSE,include=FALSE, message=FALSE, echo=FALSE}
+#elevation
+elev = elevatr::get_elev_raster(msh, z = 12) %>% 
+  crop(msh)
+
+writeRaster(elev, filename =  "../../geog-176A-labs/data/mshelev.tif", overwrite = TRUE)
+
+#slope
+whitebox::wbt_slope("../../geog-176A-labs/data/mshelev.tif", "../../geog-176A-labs/data/mshslope.tif")
+
+#aspect
+whitebox::wbt_aspect("../../geog-176A-labs/data/mshelev.tif", "../../geog-176A-labs/data/mshaspect.tif")
+
+#hillshade
+wbt_hillshade("../../geog-176A-labs/data/mshelev.tif", "../../geog-176A-labs/data/mshhill.tif")
+
+
+```
+
+```{r Plots, eval=TRUE, echo=FALSE}
+#elevation 
+re = raster("../../geog-176A-labs/data/mshelev.tif")
+plot(re, main = "Elevation", box = FALSE, axes = FALSE, col = viridis::viridis(256))
+
+#slope
+rs = raster("../../geog-176A-labs/data/mshslope.tif")
+plot(rs, main = "Slope", box = FALSE, axes = FALSE, col = terrain.colors(256))
+
+#aspect
+r = raster("../../geog-176A-labs/data/mshaspect.tif")
+plot(r, main = "Aspect", box = FALSE, axes = FALSE, col = rainbow(8))
+
+#hillshade
+rh = raster("../../geog-176A-labs/data/mshhill.tif")
+plot(rh, main = "Hillshade", box = FALSE, axes = FALSE, col = gray.colors(256, alpha = .8))
+
+```
+
